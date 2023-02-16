@@ -1,51 +1,82 @@
-let fs = require("fs");
-let input = fs.readFileSync("example.txt").toString().split("\n");
+const fs = require("fs");
+const filePath = process.platform === "linux" ? "/dev/stdin" : "example.txt";
+let input = fs.readFileSync(filePath).toString().trim().split("\n");
 
+const [M, N] = input.shift().split(" ").map(Number);
+const tomatoes = input.map((v) => v.split(" ").map(Number));
+
+class Node {
+  constructor(x, y, count = -1) {
+    this.x = x;
+    this.y = y;
+    this.count = count;
+    this.next = null;
+  }
+}
+
+class Queue {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+    this.size = 0;
+  }
+  push(value) {
+    const node = new Node(value.x, value.y, value?.count);
+    if (!this.head) {
+      this.head = node;
+      this.tail = node;
+    } else {
+      this.tail.next = node;
+      this.tail = node;
+    }
+    this.size++;
+  }
+  shift() {
+    if (!this.size) return null;
+    const node = this.head;
+    if (this.head === this.tail) {
+      this.tail = null;
+    }
+    this.head = this.head.next;
+    this.size--;
+    return node;
+  }
+}
+
+const q = new Queue();
 const ds = [
   [-1, 0],
   [1, 0],
   [0, 1],
   [0, -1],
 ];
-const [M, N] = input[0].split(" ").map(Number);
-let queue = [];
-let visit = [...Array(N)].map((e) => Array(M).fill(0));
-let count = M * N;
-let answer;
 
-// 초기 상태 세팅
-for (let i = 1; i < input.length; i++) {
-  let box = input[i].split(" ").map(Number);
+let output = 0;
+let zeroCount = 0;
 
-  box.forEach((tomato, pos) => {
-    if (tomato === 1) {
-      queue.push([i - 1, pos, 0]);
-      visit[i - 1][pos] = 1;
-      count--;
-    } else if (tomato === -1) {
-      visit[i - 1][pos] = 1;
-      count--;
+for (let i = 0; i < N; i++) {
+  for (let j = 0; j < M; j++) {
+    if (tomatoes[i][j] === 1) {
+      q.push({ x: j, y: i, count: 0 });
     }
-  });
-}
-
-let idx = 0;
-while (queue.length != idx) {
-  const [x, y, pos] = queue[idx];
-  for (let i = 0; i < 4; i++) {
-    const xPos = x + ds[i][0];
-    const yPos = y + ds[i][1];
-
-    if (xPos < 0 || yPos < 0 || xPos >= N || yPos >= M) continue;
-    if (!visit[xPos][yPos]) {
-      visit[xPos][yPos] = 1;
-      queue.push([xPos, yPos, pos + 1]);
-      count--;
+    if (tomatoes[i][j] === 0) {
+      zeroCount++;
     }
   }
-
-  idx++;
-  answer = pos;
 }
 
-console.log(count ? -1 : answer);
+while (q.size) {
+  const { x, y, count } = q.shift();
+  for (let i = 0; i < 4; i++) {
+    const nx = x + ds[i][0];
+    const ny = y + ds[i][1];
+    if (tomatoes?.[ny]?.[nx] === 0) {
+      q.push({ x: nx, y: ny, count: count + 1 });
+      zeroCount--;
+      tomatoes[ny][nx] = 1;
+      output = Math.max(output, count + 1);
+    }
+  }
+}
+
+console.log(zeroCount ? -1 : output);
