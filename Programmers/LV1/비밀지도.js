@@ -1,33 +1,16 @@
 function solution(n, arr1, arr2) {
-  var answer = [];
-  const Digit2Arr1 = arr1.map((v) => changeTo2Digit(v, n));
-  const Digit2Arr2 = arr2.map((v) => changeTo2Digit(v, n));
+  let num1, num2, s;
+  let answer = [];
   for (let i = 0; i < n; i++) {
-    answer.push(numToPattern(n, Digit2Arr1[i], Digit2Arr2[i]));
-  }
-  return answer;
-}
-
-function changeTo2Digit(num, N) {
-  let answer = "";
-  let Mock = Math.floor(num / 2);
-  let Namuji = num % 2;
-  answer = Namuji + answer;
-
-  for (let i = 2; i <= N; i++) {
-    Namuji = Mock % 2;
-    Mock = Math.floor(Mock / 2);
-    answer = Namuji + answer;
-  }
-
-  return answer;
-}
-
-function numToPattern(n, num1, num2) {
-  let answer = "";
-  for (let i = 0; i < n; i++) {
-    if (num1[i] == "1" || num2[i] == "1") answer += "#";
-    else answer += " ";
+    num1 = arr1[i];
+    num2 = arr2[i];
+    s = "";
+    for (let j = 0; j < n; j++) {
+      s = (num1 % 2) + (num2 % 2) ? "#" + s : " " + s;
+      num1 = Math.floor(num1 / 2);
+      num2 = Math.floor(num2 / 2);
+    }
+    answer.push(s);
   }
   return answer;
 }
